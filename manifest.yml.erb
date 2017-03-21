@@ -1,0 +1,13 @@
+---
+
+applications:
+  - name: dm-route-service
+    routes:
+      - route: dm-route-service-<%= ENV.fetch("PAAS_SPACE") %>.cloudapps.digital
+    buildpack: staticfile_buildpack
+    command: ./public/run.sh
+    instances: <%= ENV.fetch("PAAS_INSTANCES", "1") %>
+    memory: 512M
+    env:
+      AUTH_USERNAME: <%= ENV.fetch("AUTH_USERNAME") %>
+      AUTH_PASSWORD: <%= ENV.fetch("AUTH_PASSWORD") %>
