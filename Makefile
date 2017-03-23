@@ -2,8 +2,10 @@
 SHELL := /bin/bash
 
 PAAS_ORG = digitalmarketplace
-PAAS_APP_NAME ?= dm-route-service
+PAAS_APP_NAME ?= route-service
 PAAS_DOMAIN ?= cloudapps.digital
+
+$(eval export PAAS_APP_NAME=${PAAS_APP_NAME})
 
 .PHONY: help
 help:

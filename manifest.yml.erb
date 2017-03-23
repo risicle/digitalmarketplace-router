@@ -1,7 +1,7 @@
 ---
 
 applications:
-  - name: dm-route-service
+  - name: <%= ENV.fetch("PAAS_APP_NAME") %>
     routes:
       - route: dm-route-service-<%= ENV.fetch("PAAS_SPACE") %>.cloudapps.digital
     buildpack: staticfile_buildpack
