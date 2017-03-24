@@ -15,7 +15,7 @@ help:
 generate-manifest: ## Generates the PaaS manifest file
 	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
 	$(if ${DM_CREDENTIALS_REPO},,$(error Must specify DM_CREDENTIALS_REPO))
-	@export $$(${DM_CREDENTIALS_REPO}/sops-wrapper -d ${DM_CREDENTIALS_REPO}/paas/route-service-env.enc | xargs) && erb manifest.yml.erb
+	export $$(${DM_CREDENTIALS_REPO}/sops-wrapper -d ${DM_CREDENTIALS_REPO}/paas/route-service-env.enc | xargs) && erb manifest.yml.erb
 
 .PHONY: preview
 preview: ## Set PaaS space to preview
@@ -44,14 +44,14 @@ paas-login: ## Log in to PaaS
 
 .PHONY: paas-push
 paas-push: ## Pushes the app to Cloud Foundry (causes downtime!)
-	cf push -f <(make generate-manifest)
+	cf push -f <(make -s generate-manifest)
 
 .PHONY: paas-deploy
 paas-deploy: ## Deploys the app to Cloud Foundry without downtime
 	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
 	@cf app --guid ${PAAS_APP_NAME} || exit 1
 	cf rename ${PAAS_APP_NAME} ${PAAS_APP_NAME}-rollback
-	cf push -f <(make generate-manifest)
+	cf push -f <(make -s generate-manifest)
 	cf scale -i $$(cf curl /v2/apps/$$(cf app --guid ${PAAS_APP_NAME}) | jq -r ".entity.instances" 2>/dev/null || echo "1") ${PAAS_APP_NAME}
 	cf stop ${PAAS_APP_NAME}-rollback
 	cf delete -f ${PAAS_APP_NAME}-rollback

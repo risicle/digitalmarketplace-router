@@ -15,7 +15,7 @@ For all actions you should always have to make sure you selected the space you i
 
 ## Deployment
 
-The default application name is "dm-route-service". If you want to change this (or you want to deploy multiple route services), set the PAAS_APP_NAME environment variable for the make commands.
+The default application name is "route-service". If you want to change this (or you want to deploy multiple route services), set the PAAS_APP_NAME environment variable for the make commands.
 
 The default domain name is "cloudapps.digital". If you want to change this (or you want to bind to different domains), set the PAAS_DOMAIN environment variable for the make commands.
 
