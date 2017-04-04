@@ -66,9 +66,15 @@ paas-rollback: ## Rollbacks the app to the previous release
 .PHONY: paas-create-route-service
 paas-create-route-service: ## Creates the route service
 	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
-	 cf create-user-provided-service ${PAAS_APP_NAME} -r https://${PAAS_APP_NAME}-${PAAS_SPACE}.cloudapps.digital
+	 cf create-user-provided-service ${PAAS_APP_NAME} -r https://dm-${PAAS_APP_NAME}-${PAAS_SPACE}.cloudapps.digital
 
 .PHONY: paas-bind-route-service
 paas-bind-route-service: ## Binds the route service to the given route
-	$(if ${PAAS_ROUTE},,$(error Must specify PAAS_ROUTE))
-	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname ${PAAS_ROUTE}
+	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
+	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname dm-${PAAS_SPACE}
+	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname dm-${PAAS_SPACE} --path /admin
+	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname dm-${PAAS_SPACE} --path /suppliers
+
+
+.PHONY: create
+create: paas-push paas-create-route-service paas-bind-route-service
