@@ -15,7 +15,7 @@ help:
 generate-manifest: ## Generates the PaaS manifest file
 	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
 	$(if ${DM_CREDENTIALS_REPO},,$(error Must specify DM_CREDENTIALS_REPO))
-	export $$(${DM_CREDENTIALS_REPO}/sops-wrapper -d ${DM_CREDENTIALS_REPO}/paas/route-service-env.enc | xargs) && erb manifest.yml.erb
+	export $$(${DM_CREDENTIALS_REPO}/sops-wrapper -d ${DM_CREDENTIALS_REPO}/paas/${PAAS_SPACE}-route-service-env.enc | xargs) && erb manifest.yml.erb
 
 .PHONY: preview
 preview: ## Set PaaS space to preview
