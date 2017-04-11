@@ -7,38 +7,43 @@ PAAS_DOMAIN ?= cloudapps.digital
 
 $(eval export PAAS_APP_NAME=${PAAS_APP_NAME})
 
+define check_space
+	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
+	@[ $$(cf target | grep 'Space' | cut -d':' -f2) = "${PAAS_SPACE}" ] || (echo "${PAAS_SPACE} is not currently active cf space" && exit 1)
+endef
+
 .PHONY: help
 help:
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: generate-manifest
 generate-manifest: ## Generates the PaaS manifest file
-	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
+	$(call check_space)
 	$(if ${DM_CREDENTIALS_REPO},,$(error Must specify DM_CREDENTIALS_REPO))
-	export $$(${DM_CREDENTIALS_REPO}/sops-wrapper -d ${DM_CREDENTIALS_REPO}/paas/route-service-env.enc | xargs) && erb manifest.yml.erb
+	export $$(${DM_CREDENTIALS_REPO}/sops-wrapper -d ${DM_CREDENTIALS_REPO}/paas/${PAAS_SPACE}-route-service-env.enc | xargs) && erb manifest.yml.erb
 
 .PHONY: preview
 preview: ## Set PaaS space to preview
 	$(eval export PAAS_SPACE=preview)
-	@true
+	$(call check_space)
 
 .PHONY: staging
 staging: ## Set PaaS space to staging
 	$(eval export PAAS_SPACE=staging)
 	$(eval export PAAS_INSTANCES=2)
-	@true
+	$(call check_space)
 
 .PHONY: production
 production: ## Set PaaS space to production
 	$(eval export PAAS_SPACE=production)
 	$(eval export PAAS_INSTANCES=2)
-	@true
+	$(call check_space)
 
 .PHONY: paas-login
 paas-login: ## Log in to PaaS
 	$(if ${PAAS_USERNAME},,$(error Must specify PAAS_USERNAME))
 	$(if ${PAAS_PASSWORD},,$(error Must specify PAAS_PASSWORD))
-	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
+	$(call check_space)
 	mkdir -p ${CF_HOME}
 	@cf login -a "${PAAS_API}" -u ${PAAS_USERNAME} -p "${PAAS_PASSWORD}" -o "${PAAS_ORG}" -s "${PAAS_SPACE}"
 
@@ -48,7 +53,7 @@ paas-push: ## Pushes the app to Cloud Foundry (causes downtime!)
 
 .PHONY: paas-deploy
 paas-deploy: ## Deploys the app to Cloud Foundry without downtime
-	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
+	$(call check_space)
 	@cf app --guid ${PAAS_APP_NAME} || exit 1
 	cf rename ${PAAS_APP_NAME} ${PAAS_APP_NAME}-rollback
 	cf push -f <(make -s generate-manifest)
@@ -65,10 +70,16 @@ paas-rollback: ## Rollbacks the app to the previous release
 
 .PHONY: paas-create-route-service
 paas-create-route-service: ## Creates the route service
-	$(if ${PAAS_SPACE},,$(error Must specify PAAS_SPACE))
-	 cf create-user-provided-service ${PAAS_APP_NAME} -r https://${PAAS_APP_NAME}-${PAAS_SPACE}.cloudapps.digital
+	$(call check_space)
+	 cf create-user-provided-service ${PAAS_APP_NAME} -r https://dm-${PAAS_APP_NAME}-${PAAS_SPACE}.cloudapps.digital
 
 .PHONY: paas-bind-route-service
 paas-bind-route-service: ## Binds the route service to the given route
-	$(if ${PAAS_ROUTE},,$(error Must specify PAAS_ROUTE))
-	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname ${PAAS_ROUTE}
+	$(call check_space)
+	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname dm-${PAAS_SPACE}
+	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname dm-${PAAS_SPACE} --path /admin
+	cf bind-route-service cloudapps.digital ${PAAS_APP_NAME} --hostname dm-${PAAS_SPACE} --path /suppliers
+
+
+.PHONY: create
+create: paas-push paas-create-route-service paas-bind-route-service

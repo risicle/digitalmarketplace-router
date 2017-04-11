@@ -23,6 +23,20 @@ The secret values are read from the digitalmarketplace-credentials repository us
 
 The instance count can be set with the PAAS_INSTANCES environment variable (1 by default).
 
+## Deploying the app, registering it as a user-provided service and registering routes in one fell swoop.
+
+If you're deploying the app for the first time you can use:
+
+```
+make <PaaS space> create
+```
+
+This will push the app, create the route service and bind the frontend apps to the route service.
+It uses the default value for the `PAAS_APP_NAME` which is `route-service`.
+
+All these steps can be done individually with separate `make` commands (see below), but it's a bit of a pain.
+
+
 ## Deploying the route service application
 
 If you're deploying the very first time, simply run:
@@ -46,29 +60,33 @@ make <PaaS space> paas-rollback
 ## Registering the application as a user-provided service
 
 You only need to do this once per PaaS space.
-
 ```
 make <PaaS space> paas-create-route-service
 ```
 
 ## Register the application as a route-service for a route
 
-You only need to do this once per PaaS space and for all routes.
+You only need to do this once per PaaS space. It registers all of the frontend apps with the route service.
 
-make <PaaS space> paas-bind-route-service PAAS_ROUTE=<route of your application>
+make <PaaS space> paas-bind-route-service
 
 ## Complete installation example
 
-In this example we are deploying the route service to preview and binding two applications to it, which are accessible on app-01.cloudapps.digital and app-02.cloudapps.digital.
+In this example we are deploying the route service to preview and binding the frontend apps to it.
 
+The easy way.
+```
+make <PaaS space> create
+```
+
+The less easy way.
 ```
 # First installation:
 make preview paas-push
 make preview paas-create-route-service
 
-# Run this for every applicaton once
-make preview paas-bind-route-service PAAS_ROUTE=app-01
-make preview paas-bind-route-service PAAS_ROUTE=app-02
+# Run this once
+make preview paas-bind-route-service
 
 # For any future deployments only run:
 make preview paas-deploy
