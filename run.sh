@@ -11,4 +11,6 @@ if [ ! -f "${AUTH_FILE}" ]; then
   exit 1
 fi
 
-exec ./boot.sh
+cat < $APP_ROOT/nginx/logs/access.log &
+(>&2 cat) < $APP_ROOT/nginx/logs/error.log &
+exec $APP_ROOT/nginx/sbin/nginx -p $APP_ROOT/nginx -c $APP_ROOT/nginx/conf/nginx.conf
