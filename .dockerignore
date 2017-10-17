@@ -2,9 +2,8 @@
 *
 
 !awslogs
-!nginx.conf
 !nginx.sh
-!render-template.py
+!scripts/
 !requirements.txt
 !static_files
 !supervisord.conf

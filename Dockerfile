@@ -24,11 +24,10 @@ COPY awslogs/awslogs.conf /etc/awslogs.conf
 COPY awslogs/run.sh /awslogs.sh
 
 COPY supervisord.conf /etc/supervisord.conf
-COPY nginx.conf /etc/nginx/nginx.conf
 
 COPY nginx.sh /nginx.sh
 
 COPY templates/ ${APP_DIR}/templates/
-COPY render-template.py ${APP_DIR}
+COPY scripts/ ${APP_DIR}/scripts/
 
 CMD ["supervisord", "--configuration", "/etc/supervisord.conf"]

@@ -13,12 +13,20 @@ http {
     # Set DNS resolver address
     resolver 10.0.0.2 valid=300s;
 
-    # Replace ELB IP with the real user IP
-    # real_ip_header X-Forwarded-For;
+    # Replace proxy IPs with the real user IP
+    real_ip_header X-Forwarded-For;
 
-    # Only trust X-Forwarded-For for requests
-    # coming from the default VPC (ie ELB)
-    # set_real_ip_from 172.31.0.0/16;
+    # Replace connection IP and X-Forwarded-For IPs
+    # from the PaaS router, localhost and Cloudfront
+    set_real_ip_from 10.0.0.0/16;
+    set_real_ip_from 127.0.0.1/32;
+
+    {% for cloudfront_ip in cloudfront_ips.split(",") %}
+    set_real_ip_from {{ cloudfront_ip }};
+    {% endfor %}
+
+    # Ignore trusted IPs in X-Forwarded-For
+    real_ip_recursive on;
 
     # a few good practice security headers
     add_header X-Content-Type-Options nosniff;
