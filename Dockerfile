@@ -1,0 +1,34 @@
+FROM nginx:1.13
+
+ENV APP_DIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+                    python2.7 python-setuptools python-pip && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir supervisor awscli awscli-cwlogs && \
+    aws configure set plugins.cwlogs cwlogs && \
+    mkdir -p ${APP_DIR} && \
+    mkdir -p /etc/nginx/sites-available && \
+    mkdir -p /etc/nginx/sites-enabled && \
+    mkdir -p /usr/share/nginx/html && \
+    mkdir -p /var/log/digitalmarketplace && \
+    rm -f /etc/nginx/sites-enabled/*
+
+COPY requirements.txt ${APP_DIR}
+RUN pip install -r ${APP_DIR}/requirements.txt
+
+COPY static_files/* /usr/share/nginx/html/
+
+COPY awslogs/awslogs.conf /etc/awslogs.conf
+COPY awslogs/run.sh /awslogs.sh
+
+COPY supervisord.conf /etc/supervisord.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+
+COPY nginx.sh /nginx.sh
+
+COPY templates/ ${APP_DIR}/templates/
+COPY render-template.py ${APP_DIR}
+
+CMD ["supervisord", "--configuration", "/etc/supervisord.conf"]
