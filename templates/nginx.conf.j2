@@ -11,7 +11,7 @@ events {
 
 http {
     # Set DNS resolver address
-    resolver 10.0.0.2 valid=300s;
+    resolver {{ resolver_ip }} valid=300s;
 
     # Replace proxy IPs with the real user IP
     real_ip_header X-Forwarded-For;

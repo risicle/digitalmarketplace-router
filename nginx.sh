@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export DM_CLOUDFRONT_IPS=$(/app/scripts/get-cloudfront-ips.py)
+export DM_RESOLVER_IP=$(awk '/nameserver/{ print $2; exit}' /etc/resolv.conf)
 
 /app/scripts/render-template.py /app/templates/nginx.conf.j2 > /etc/nginx/nginx.conf
 
