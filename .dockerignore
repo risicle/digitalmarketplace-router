@@ -1,0 +1,10 @@
+.git
+*
+
+!awslogs
+!nginx.sh
+!scripts/
+!requirements.txt
+!static_files
+!supervisord.conf
+!templates
