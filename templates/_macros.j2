@@ -11,6 +11,7 @@ proxy_set_header X-Forwarded-Proto https;
 proxy_set_header X-Forwarded-Host "$http_host";
 
 proxy_set_header DM-Request-ID "";
+proxy_set_header X-Amz-Cf-Id "";
 
 # drop headers returned by the app server that shouldn't be forwarded to the client
 proxy_hide_header "Strict-Transport-Security";
