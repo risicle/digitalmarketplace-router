@@ -12,8 +12,8 @@ events {
 # Don't apply rate limiting to whitelisted IPs
 geo $limit {
     default 1;
-    {% for admin_ip in admin_user_ips.split(",") %}
-    {{ admin_ip }} 0;
+    {% for dev_user_ip in dev_user_ips.split(",") %}
+    {{ dev_user_ip }} 0;
     {% endfor %}
 }
 
