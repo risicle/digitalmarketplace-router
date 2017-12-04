@@ -47,6 +47,9 @@ http {
     # Set max request size (up to 4 files x 10Mb size limit)
     client_max_body_size 40m;
 
+    # Basic rate limiting
+    limit_req_zone $binary_remote_addr zone=dm_limit:10m rate=10r/s;
+
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
